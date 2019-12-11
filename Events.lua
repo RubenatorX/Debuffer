@@ -9,11 +9,11 @@ windower.register_event('load', function()
 end)
 
 windower.register_event('incoming chunk', function(id, data)
-    if id == 0x028 then
+    if id == constants.packets.ACTION_PACKET then
         parse_incoming_action_packet(data)
-    elseif id == 0x029 then
+    elseif id == constants.packets.ACTION_MESSAGE_PACKET then
         parse_incoming_action_message_packet(data)
-    elseif id == 0x050 then
+    elseif id == constants.packets.EQUIP_PACKET then
         parse_incoming_equip_packet(data)
     end
 end)

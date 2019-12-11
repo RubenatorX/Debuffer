@@ -18,11 +18,15 @@ function get_spell_info(spell_id)
     return res.spells[spell_id] or nil
 end
 
+function get_buff_info(status_id)
+    return res.buffs[status_id] or nil
+end
+
 function handle_mob_enfeeble(packet, spell_info)
     for _, target in pairs(packet.targets) do
         add_debuffed_mob(target.id)
         local mob_debuffs = debuffed_mobs[target.id]
-        local status_id = target.actions[1].param
+        local buff_info = get_buff_info(target.actions[1].param)
         local expected_duration = custom_durations[spell_info.id] or spell_info.duration or 0
 
         if spell_info.skill == 35 then
@@ -39,7 +43,7 @@ function handle_mob_enfeeble(packet, spell_info)
             end
         end
 
-        apply_debuff_mob(target.id, status_id, spell_info, expected_duration)
+        apply_debuff_mob(target.id, buff_info, spell_info, expected_duration)
     end
 end
 
@@ -47,7 +51,7 @@ function handle_dia_spell(packet, spell_info)
     for _, target in pairs(packet.targets) do
         add_debuffed_mob(target.id)
         local mob_debuffs = debuffed_mobs[target.id]
-        local status_id = target.actions[1].param
+        local buff_info = get_buff_info(target.actions[1].param)
         local expected_duration = custom_durations[spell_info.id] or spell_info.duration or 0
 
         if spell_info.skill == 35 then
@@ -57,10 +61,10 @@ function handle_dia_spell(packet, spell_info)
         if mob_debuffs[134] then
             if custom_overwrites[spell_info.id] and custom_overwrites[spell_info.id]:contains(mob_debuffs[134].spell_id) then
                 remove_debuffed_mob(mob_id, 134)
-                apply_debuff_mob(target.id, status_id, spell_info, expected_duration)
+                apply_debuff_mob(target.id, buff_info, spell_info, expected_duration)
             elseif spell_info.overwrites and spell_info.overwrites:contains(mob_debuffs[134].spell_id) then
                 remove_debuffed_mob(mob_id, 134)
-                apply_debuff_mob(target.id, status_id, spell_info, expected_duration)
+                apply_debuff_mob(target.id, buff_info, spell_info, expected_duration)
             else
                 return
             end
@@ -68,10 +72,10 @@ function handle_dia_spell(packet, spell_info)
         elseif mob_debuffs[135]
             if custom_overwrites[spell_info.id] and custom_overwrites[spell_info.id]:contains(mob_debuffs[135].spell_id) then
                 remove_debuffed_mob(mob_id, 135)
-                apply_debuff_mob(target.id, status_id, spell_info, expected_duration)
+                apply_debuff_mob(target.id, buff_info, spell_info, expected_duration)
             elseif spell_info.overwrites and spell_info.overwrites:contains(mob_debuffs[135].spell_id) then
                 remove_debuffed_mob(mob_id, 135)
-                apply_debuff_mob(target.id, status_id, spell_info, expected_duration)
+                apply_debuff_mob(target.id, buff_info, spell_info, expected_duration)
             else
                 return
             end
@@ -85,9 +89,9 @@ function handle_helix_spell(packet, spell_info)
     add_debuffed_mob(target.id)
 
     local expected_duration = custom_durations[spell_info.id] or spell_info.duration or 0
-    local status_id = target.actions[1].param
+    local buff_info = get_buff_info(target.actions[1].param)
 
-    apply_debuff_mob(target.id, status_id, spell_info, expected_duration)
+    apply_debuff_mob(target.id, buff_info, spell_info, expected_duration)
 end
 
 function handle_ja_spell(packet, spell_info)
@@ -117,17 +121,16 @@ function remove_debuffed_mob(mob_id)
     end
 end
 
-function apply_debuff_mob(mob_id, status_id, spell_info, expected_duration)
-    if debuffed_mobs[mob_id][status_id] ~= nil then
-        debuffed_mobs[mob_id][status_id] = nil
+function apply_debuff_mob(mob_id, buff_info, spell_info, expected_duration)
+    if debuffed_mobs[mob_id][buff_info.id] ~= nil then
+        debuffed_mobs[mob_id][buff_info.id] = nil
     end
 
-    debuffed_mobs[mob_id][status_id] = {
-        spell_id = spell_info.id,
-        spell_name = spell_info.en,
-        spell_start_time = os.clock()
+    debuffed_mobs[mob_id][buff_info.id] = {
+        buff = buff_info,
+        spell = spell_info,
+        spell_start_time = os.clock(),
         spell_duration = expected_duration
-        spell_timer = os.clock() + expected_duration
     }
 end
 
@@ -137,13 +140,12 @@ function apply_ja_debuff_mob(mob_id, status_id, spell_info, expected_duration)
     end
 
     debuffed_mobs[mob_id][status_id] = {
-        spell_id = spell_info.id,
-        spell_name = spell_info.en,
+        spell = spell_info,
         spell_start_time = os.clock(),
         spell_duration = expected_duration,
-        spell_timer = os.clock() + expected_duration,
         ja_tier = 1,
-        spell_effect = ja_spell_effects[spell_info.id] .. '5%'
+        spell_effect = ja_spell_effects[spell_info.id] .. '5%',
+        remove_at_end_of_timer = true
     }
 end
 
@@ -166,16 +168,16 @@ function clear_debuffed_mobs()
     debuffed_mobs = {}
 end
 
-function get_buff_info(buff_info)
+function get_buff_info_string(buff_info)
     local time = os.clock()
-    local info_string = buff_info.spell_name .. ' : ' .. string.format( "%.0f",buff_info.spell_timer - time)
+    local info_string = buff_info.buff.en .. '(' .. buff_info.spell.en .. ') : ' .. string.format( "%.0f",(buff_info.spell_start_time + buff_info.expected_duration) - time)
 
     return info_string
 end
 
-function get_ja_buff_info(buff_info)
+function get_ja_buff_info_string(buff_info)
     local time = os.clock()
-    local info_string = buff_info.spell_effect .. ' : ' .. string.format("%.0f", buff_info.spell_timer - time)
+    local info_string = buff_info.spell_effect .. '(' .. buff_info.spell_name .. ') : ' .. string.format("%.0f", (buff_info.spell_start_time + buff_info.expected_duration) - time)
 
     return info_string
 end

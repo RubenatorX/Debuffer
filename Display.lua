@@ -26,14 +26,16 @@ function update_box()
 
         if current_debuffs then
             for buff_id, buff_info in pairs(current_debuffs) do
-                if buff_info.spell_timer - os.clock() >= 0 then
+                if buff_info.spell_start_time + buff_info.expected_duration - os.clock() >= 0 then
                     if ja_spells:contains(buff_info.spell_id) then
                         debuff_strings:append(get_ja_buff_info(buff_info))
                     else
                         debuff_string:append(get_buff_info(buff_info))
                     end
                 else
+                    if buff_info.remove_at_end_of_timer then
 
+                    end
                 end
             end
         end

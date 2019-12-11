@@ -5,16 +5,31 @@ message_ids.enfeeble_success = S{236,237,266,267,268,269,270,271,272,277,278,279
 message_ids.absorb_success = S{329,330,331,332,333,334,335,533}
 message_ids.debuff_wears = S{204,206}
 
-categories = {}
-categories.MELEE_HIT = 1
-categories.RANGED_ATTACK = 2
-categories.WEAPONSKILL_DAMAGE_ABILITY = 3
-categories.SPELL_CAST_FINISHED = 4
-categories.JOB_ABILITY = 6
-categories.PET_ABILITY = 7
-categories.PET_TP_ABILITY = 13
-categories.JOB_ABILITY_NON_BLINKABLE = 14
-categories.RUN_ABILITY = 15
+constants = {}
+
+constants.packets = {
+    ACTION_PACKET = 0x028,
+    ACTION_MESSAGE_PACKET = 0x029,
+    EQUIP_PACKET = 0x050
+}
+
+constants.categories = {}
+constants.categories.MELEE_HIT = 1
+constants.categories.RANGED_ATTACK = 2
+constants.categories.WEAPONSKILL_DAMAGE_ABILITY = 3
+constants.categories.SPELL_CAST_FINISHED = 4
+constants.categories.JOB_ABILITY = 6
+constants.categories.PET_ABILITY = 7
+constants.categories.PET_TP_ABILITY = 13
+constants.categories.JOB_ABILITY_NON_BLINKABLE = 14
+constants.categories.RUN_ABILITY = 15
+
+constants.buffs = {}
+constants.buffs.DIA = 134
+constants.buffs.BIO = 135
+constants.buffs.COMPOSURE = 419
+constants.buffs.SABOTEUR = 454
+constants.buffs.STYMIE = 494
 
 
 status_ids = {

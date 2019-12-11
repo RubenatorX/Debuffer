@@ -109,7 +109,7 @@ end
 
 function calculate_saboteur_modifier(spell_info)
     if player.main_job ~= "RDM" then return 100 end
-    if not player.buffs[454] then return 100 end
+    if not player.buffs[contants.buffs.SABOTEUR] then return 100 end
 
     local modifier = 200
     local hands_info = enfeebling_saboteur_bonus_items[6][gear_table[6].id] or nil
@@ -152,7 +152,7 @@ function calculate_enfeebling_flat_duration_bonus(spell_info)
             bonus_duration = bonus_duration + bonus_duration_jp
         end
 
-        if player.buffs[494] and bonus_duration_stymie_jp > 0 then
+        if player.buffs[constants.buffs.STYMIE] and bonus_duration_stymie_jp > 0 then
             bonus_duration = bonus_duration + bonus_duration_stymie_jp
         end
     end
@@ -161,7 +161,7 @@ function calculate_enfeebling_flat_duration_bonus(spell_info)
 end
 
 function calculate_composure_modifier(spell_info)
-    if player.main_job ~= "RDM" or not player.buffs[419] then return 100 end
+    if player.main_job ~= "RDM" or not player.buffs[constants.buffs.COMPOSURE] then return 100 end
 
     local default_bonus = 100
     local bonus_modifiers = {[0] = 0, [1] = 0, [2] = 10, [3] = 20, [4] = 35, [5] = 50}
